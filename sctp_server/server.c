@@ -86,99 +86,8 @@ int init_epoll()
   return efd;
 }
 
-static
-void disable_sctp_hb(int sfd, struct sctp_sndrcvinfo const* sri)
-{
-//  struct sockaddr *addrs = calloc(1, sizeof(struct sockaddr));
-//
-//  int cnt = sctp_getpaddrs(sfd,
-//      sri->sinfo_assoc_id,
-//      &addrs);
-//
-//  printf("assoc addr cnt %d \n", cnt);
-//  for(int i = 0; i < cnt; ++i){
-//    char str[64] = {0};
-//    // now get it back and print it
-//    inet_ntop(AF_INET, &((struct sockaddr_in*)&addrs[i])->sin_addr , str, INET_ADDRSTRLEN);
-//    printf("%s\n", str); // prints "192.0.2.33"
-//  }
-//
-//  //         struct sockaddr_in sa;
-//  //char str[INET_ADDRSTRLEN] = "192.168.20.138";
-//  //
-//  //// store this IP address in sa:
-//  //inet_pton(AF_INET, "192.0.2.33", &(sa.sin_addr));
-//  //
-//  //// now get it back and print it
-//  //inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN);
-//  //
-//  //printf("%s\n", str); // prints "192.0.2.33"
-//  //
-//
-//
-//  struct sockaddr_storage storage = {0};
-//  struct sockaddr_in sin = {0};
-//  sin.sin_family = AF_INET;
-//  sin.sin_port = 36421;
-//
-//  //inet_pton(AF_INET, "192.168.20.138", &(sin.sin_addr));
-//  inet_pton(AF_INET, "192.168.20.138", &(sin.sin_addr));
-//
-//
-//  //      inet_ntop(AF_INET, &(sin.sin_addr), str, INET_ADDRSTRLEN);
-//
-//  //sin.sin_addr.s_addr = inet_addr ("192.168.20.138");
-//  //sin.sin_addr.s_addr = inet_addr ("0.0.0.0");
-//  memcpy (&storage, &sin, sizeof (sin));
-//
-//
-//  struct sctp_paddrparams padd = {
-//    .spp_assoc_id = sri->sinfo_assoc_id , //sctp_assoc_t spp_assoc_id;
-//    .spp_address = storage, //sctp_assoc_t spp_assoc_id;
-//    //uint32_t spp_hbinterval;
-//    //uint16_t spp_pathmaxrxt;
-//    //uint32_t spp_pathmtu;
-//    .spp_flags = SPP_HB_DISABLE, //uint32_t spp_flags;
-//    //uint32_t spp_ipv6_flowlabel;
-//    //uint8_t  spp_dscp;
-//  };
-//  memcpy (&padd.spp_address, &sin, sizeof (sin));
-//
-//  struct sctp_rtoinfo rto = {
-//    .srto_assoc_id = sri->sinfo_assoc_id,
-//    //uint32_t        srto_initial;
-//    //uint32_t        srto_max;
-//    //uint32_t        srto_min;
-//  };
-//
-//  uint32_t slen = sizeof(struct sctp_paddrparams); // sizeof(rto); //
-//  int rc = sctp_opt_info(sfd,
-//      sri->sinfo_assoc_id,
-//      SCTP_PEER_ADDR_PARAMS, //SCTP_RTOINFO, // 
-//      &padd, //&rto, //&padd,
-//      &slen);
-//  if(rc != 0){
-//    printf("errno %d \n", errno);
-//  }
-//  assert(rc == 0);
-
-
-   struct sctp_paddrparams heartbeat = {0};
-
-   heartbeat.spp_flags = SPP_HB_ENABLE;
-   heartbeat.spp_hbinterval = 100;
-   heartbeat.spp_pathmaxrxt = 1;
-
-   int ret;
-   /*Configure Heartbeats*/
-   if((ret = setsockopt(sfd, SOL_SCTP, SCTP_PEER_ADDR_PARAMS , &heartbeat, sizeof(heartbeat))) != 0)
-       perror("setsockopt");
-
-}
-
 int main()
 {
-  //const char* addr = "192.168.20.138";
   const char* addr = "127.0.0.1";
   const int port = 36421; 
   int sfd = init_sctp_conn_server(addr, port);
@@ -216,8 +125,6 @@ int main()
       assert(rc > -1);
       printf("Received data: %s from client and number of bytes = %d\n", (char*)buffer, rc); 
       fflush(stdout);
-
-      disable_sctp_hb(sfd, &sri);
 
       rc = sctp_sendmsg(sfd, (void*)buffer, len,(struct sockaddr *)&from, sizeof(struct sockaddr), sri.sinfo_ppid, sri.sinfo_flags, sri.sinfo_stream, 0, 0) ;
       assert(rc != 0);

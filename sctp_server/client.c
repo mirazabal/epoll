@@ -77,8 +77,6 @@ int counter = 0;
 int main()
 {
   const char* addr = "127.0.0.1";
-
-  //const char* addr = "192.168.20.138";
   const int port = 36421;
   struct sockaddr_in servaddr;
   const int fd = init_sctp_conn_client(addr, port, &servaddr);
