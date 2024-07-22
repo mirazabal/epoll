@@ -38,6 +38,11 @@ int init_sctp_conn_client(const char* addr, int port, struct sockaddr_in* servad
   evnts.sctp_data_io_event = 1 ;
   setsockopt(sock_fd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof (evnts));
 
+  struct sctp_paddrparams heartbeat = {0};
+  heartbeat.spp_flags = SPP_HB_DISABLE;
+  int ret = setsockopt(sock_fd, SOL_SCTP, SCTP_PEER_ADDR_PARAMS , &heartbeat, sizeof(heartbeat));
+  assert(ret == 0);
+
   return sock_fd;
 }
 
@@ -72,10 +77,13 @@ int counter = 0;
 int main()
 {
   const char* addr = "127.0.0.1";
+
+  //const char* addr = "192.168.20.138";
   const int port = 36421;
   struct sockaddr_in servaddr;
   const int fd = init_sctp_conn_client(addr, port, &servaddr);
   set_fd_non_blocking(fd);
+
   int efd = init_epoll();
   add_fd_epoll(efd, fd);
 
